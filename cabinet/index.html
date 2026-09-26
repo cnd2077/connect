@@ -1,0 +1,84 @@
+---
+layout: default
+title: Кабинет
+show_title: false
+script: cabinet.js
+---
+<!-- Покупка (если человек ещё не входил) и личный кабинет. Логика — в assets/cabinet.js. -->
+{% include connect.html %}
+
+<section id="shop" class="hidden">
+  <h1>Купить подписку</h1>
+  <div class="card">
+    <div class="step">Выберите тариф — оплата раз в месяц</div>
+    <div id="tariffs"></div>
+    <small>Одна ссылка — все серверы, лучший выбирается сам. Работает на iPhone, Android, Windows и macOS.</small>
+    <label class="check"><input type="checkbox" id="accept">
+      <span>Принимаю <a href="{{ '/terms/' | relative_url }}" target="_blank">пользовательское соглашение</a> и <a href="{{ '/privacy/' | relative_url }}" target="_blank">политику конфиденциальности</a></span></label>
+    <button id="buy" class="btn primary" type="button" disabled>Оплатить</button>
+    <small id="testnote" class="hidden">🧪 Тестовый режим: реальные деньги не списываются.</small>
+  </div>
+  <div class="card">
+    <div class="step">Уже покупали?</div>
+    <p style="margin:0">Откройте сохранённую ссылку на кабинет — она приходила после оплаты. Покупали в Telegram-боте — нажмите там «🌐 Сайт».</p>
+  </div>
+</section>
+
+<section id="cabinet" class="hidden">
+  <h1>Кабинет</h1>
+  <div class="card">
+    <div class="step">Ваша подписка</div>
+    <div class="row"><span>Статус</span><b id="c-status">—</b></div>
+    <div class="row"><span>Действует до</span><span id="c-until">—</span></div>
+    <div class="row"><span>Устройств</span><span id="c-devices">—</span></div>
+    <div class="row"><span>Баланс</span><b id="c-balance">—</b></div>
+    <div id="c-pending" class="warn hidden" style="margin-top:8px">⏳ Ждём подтверждение оплаты… обычно до минуты.</div>
+  </div>
+
+  <div id="c-connect" class="hidden"></div>
+
+  <div class="card">
+    <div class="step" id="c-renew-title">Продлить на месяц</div>
+    <div id="c-tariffs"></div>
+    <small>Спишется с баланса, если хватает; иначе — оплата недостающей суммы.</small>
+  </div>
+
+  <div class="card">
+    <div class="step">Пополнить баланс</div>
+    <div class="grid">
+      <button class="btn" data-topup="100">+100 ₽</button><button class="btn" data-topup="250">+250 ₽</button>
+      <button class="btn" data-topup="500">+500 ₽</button><button class="btn" data-topup="1000">+1000 ₽</button>
+    </div>
+    <input id="c-amount" class="num" type="number" min="50" max="50000" inputmode="numeric" placeholder="Другая сумма, ₽">
+    <button id="c-topup" class="btn" type="button">Пополнить</button>
+    <div class="switch" style="margin-top:14px">
+      <span>Автопродление с баланса<br><small style="margin:0">Списывается за сутки до окончания</small></span>
+      <input type="checkbox" id="c-auto">
+    </div>
+  </div>
+
+  <div id="c-keys" class="card hidden">
+    <div class="step">🛜 Ключи для роутера</div>
+    <div id="c-keys-list"></div>
+    <small>Купить новый ключ и получить ссылку для роутера можно в Telegram-боте, раздел «🛜 Для роутера».</small>
+  </div>
+
+  <div class="card">
+    <div class="step">✈️ Telegram</div>
+    <div id="c-tg-linked" class="hidden"><p style="margin:0" class="ok">Аккаунт привязан к Telegram — баланс и подписка общие с ботом.</p></div>
+    <div id="c-tg-unlinked" class="hidden">
+      <p style="margin:0">Привяжите Telegram, чтобы пользоваться и ботом, и сайтом с одним балансом и подпиской.</p>
+      <button id="c-link" class="btn" type="button">Привязать Telegram</button>
+      <small>Откроется бот — нажмите в нём «Запустить». Ссылка действует час.</small>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="step">🔑 Ссылка на ваш кабинет</div>
+    <p style="margin:0">Сохраните её в закладки или заметки — это вход в кабинет без пароля. Никому не передавайте.</p>
+    <code class="key" id="c-key"></code>
+    <button id="c-copykey" class="btn" type="button">📋 Скопировать ссылку на кабинет</button>
+    <small id="c-keycopied" class="hidden ok">Скопировано.</small>
+  </div>
+  <p style="text-align:center"><a href="#" id="c-logout">Выйти из кабинета на этом устройстве</a></p>
+</section>

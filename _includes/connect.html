@@ -1,0 +1,17 @@
+<template id="connect-tpl">
+  <div class="card">
+    <div class="step">1. Установите INCY</div>
+    {% include downloads.html %}
+  </div>
+  <div class="card">
+    <div class="step">2. Добавьте подписку</div>
+    <a class="btn primary" data-incy href="#">📲 Подключить в INCY</a>
+    <button class="btn" data-copy type="button">📋 Скопировать ссылку</button>
+    <small class="hidden ok" data-copied>Скопировано. В INCY нажмите «+» → «Импорт из буфера» / «Добавить подписку».</small>
+    <a class="btn" data-happ href="#">Открыть в Happ</a>
+  </div>
+  <div class="card">
+    <div class="step">3. Включите</div>
+    <p style="margin:0">Выберите <b>⚡ Авто</b> и нажмите кнопку подключения. Телефон спросит разрешение на VPN — разрешите.</p>
+  </div>
+</template>

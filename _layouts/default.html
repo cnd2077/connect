@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>{% if page.title %}{{ page.title }} — {% endif %}{{ site.title }}</title>
+<link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" data-brand href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav>
+      {% for item in site.menu %}<a href="{{ item.url | relative_url }}"{% if page.url == item.url %} class="active"{% endif %}>{{ item.title }}</a>{% endfor %}
+    </nav>
+  </div>
+</header>
+
+<main class="wrap{% if page.wide %} wide{% endif %}">
+  <div id="msg" class="card hidden"></div>
+  {% if page.title and page.show_title != false %}<h1>{{ page.title }}</h1>{% endif %}
+  {{ content }}
+</main>
+
+<footer class="wrap">
+  <a href="{{ '/terms/' | relative_url }}">Соглашение</a> ·
+  <a href="{{ '/privacy/' | relative_url }}">Конфиденциальность</a> ·
+  <a href="{{ '/cabinet/' | relative_url }}">Кабинет</a>
+  <span class="support hidden" data-support></span>
+</footer>
+
+<script>window.SITE = { api: "{{ site.api }}", base: "{{ '/' | relative_url }}" };</script>
+<script src="{{ '/assets/common.js' | relative_url }}"></script>
+{% if page.script %}<script src="{{ page.script | prepend: '/assets/' | relative_url }}"></script>{% endif %}
+</body>
+</html>
