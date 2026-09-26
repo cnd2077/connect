@@ -98,6 +98,28 @@
       $("c-renew-title").textContent = me.link ? "Продлить на месяц" : "Оплатить подписку";
       show($("c-pending"), me.pending);
       show($("c-tg-linked"), !!me.telegram); show($("c-tg-unlinked"), !me.telegram);
+      var wl = me.whitelist;
+      show($("c-wl"), !!wl);
+      if (wl) {
+        $("c-wl-monthly").textContent = wl.monthly_gb;
+        $("c-wl-left").textContent = wl.left_gb + " ГБ";
+        $("c-wl-split").textContent = wl.monthly_left_gb + " / " + wl.bought_left_gb + " ГБ";
+        var packs = $("c-wl-packs");
+        if (!packs.childElementCount) {
+          wl.packages_gb.forEach(function (gb) {
+            var b = document.createElement("button");
+            b.className = "btn"; b.type = "button";
+            b.textContent = "+" + gb + " ГБ — " + gb * wl.price_per_gb + " ₽";
+            b.onclick = function () {
+              b.disabled = true; message("");
+              api("/wl/buy", { token: token, body: { gb: gb } }).then(function (j) {
+                if (j.paid) { message("✅ Трафик добавлен.", "ok"); loadCabinet(); } else goPay(j);
+              }, function (err) { message(err.message, "err"); }).then(function () { b.disabled = false; });
+            };
+            packs.appendChild(b);
+          });
+        }
+      }
       var keys = me.router_keys || [];
       show($("c-keys"), keys.length > 0);
       $("c-keys-list").innerHTML = "";
