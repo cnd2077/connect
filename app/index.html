@@ -1,0 +1,155 @@
+---
+layout: null
+---
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="robots" content="noindex">
+<title>VPN</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- Мини-приложение для Telegram-бота. Тексты можно менять прямо здесь; логика — в assets/miniapp.js. -->
+<style>
+  :root {
+    --bg: var(--tg-theme-bg-color, #0f1115);
+    --card: var(--tg-theme-secondary-bg-color, #181b22);
+    --text: var(--tg-theme-text-color, #e8eaf0);
+    --muted: var(--tg-theme-hint-color, #9aa1b1);
+    --accent: var(--tg-theme-button-color, #4f8cff);
+    --accent-text: var(--tg-theme-button-text-color, #fff);
+    --ok: #2fbf71; --warn: #e5a13a; --err: #ef5a5a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.45 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px 16px 40px; }
+  h1 { font-size: 24px; margin: 4px 0 14px; }
+  h2 { font-size: 20px; margin: 0 0 12px; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--muted); font-size: 15px; }
+  .card { background: var(--card); border-radius: 18px; padding: 18px; margin: 0 0 14px; }
+  .status { text-align: center; padding: 22px 18px; }
+  .status .big { font-size: 42px; line-height: 1; margin-bottom: 8px; }
+  .status .title { font-size: 21px; font-weight: 700; }
+  .status .sub { color: var(--muted); margin-top: 4px; }
+  button.act { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 16px; margin: 0 0 12px;
+    border: 0; border-radius: 16px; background: var(--card); color: var(--text); font: inherit; cursor: pointer; }
+  button.act .ico { font-size: 28px; width: 36px; text-align: center; flex: none; }
+  button.act b { display: block; font-size: 18px; }
+  button.act span.d { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+  button.act.main { background: var(--accent); color: var(--accent-text); }
+  button.act.main span.d { color: var(--accent-text); opacity: .85; }
+  button.act:disabled { opacity: .5; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .num { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-text);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .step .body { flex: 1; }
+  .btn { display: block; width: 100%; padding: 15px; margin-top: 10px; border: 0; border-radius: 14px; font: inherit; font-weight: 600;
+    background: var(--accent); color: var(--accent-text); cursor: pointer; text-align: center; }
+  .btn.light { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid .btn { margin: 0; }
+  .toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .toggle input { width: 26px; height: 26px; flex: none; }
+  .hidden { display: none !important; }
+  a { color: var(--accent); }
+  .center { text-align: center; }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- загрузка / ошибка -->
+  <section id="s-loading" class="center"><p class="muted" style="margin-top:40vh">Загрузка…</p></section>
+  <section id="s-error" class="hidden center">
+    <div class="card status"><div class="big">😕</div><div class="title">Не получилось открыть</div>
+      <div class="sub" id="err-text"></div></div>
+    <button class="btn" id="err-retry" type="button">Попробовать ещё раз</button>
+  </section>
+
+  <!-- главный экран -->
+  <section id="s-home" class="hidden">
+    <h1 id="hello">Здравствуйте!</h1>
+    <div class="card status">
+      <div class="big" id="st-ico">…</div>
+      <div class="title" id="st-title"></div>
+      <div class="sub" id="st-sub"></div>
+    </div>
+
+    <button class="act main hidden" id="b-trial" type="button"><span class="ico">🎁</span>
+      <span><b>Попробовать бесплатно</b><span class="d" id="b-trial-d"></span></span></button>
+    <button class="act hidden" id="b-connect" type="button"><span class="ico">📲</span>
+      <span><b>Подключить телефон</b><span class="d">или компьютер — три простых шага</span></span></button>
+    <button class="act" id="b-buy" type="button"><span class="ico">💳</span>
+      <span><b id="b-buy-t">Купить</b><span class="d" id="b-buy-d">оплата раз в месяц</span></span></button>
+    <button class="act" id="b-balance" type="button"><span class="ico">💰</span>
+      <span><b id="b-balance-t">Баланс</b><span class="d" id="b-balance-d"></span></span></button>
+    <button class="act hidden" id="b-wl" type="button"><span class="ico">📵</span>
+      <span><b>Если урезали мобильный интернет</b><span class="d" id="b-wl-d"></span></span></button>
+    <button class="act" id="b-help" type="button"><span class="ico">🆘</span>
+      <span><b>Помощь</b><span class="d">напишите нам — поможем настроить</span></span></button>
+  </section>
+
+  <!-- подключение -->
+  <section id="s-connect" class="hidden">
+    <h2>Подключение за 3 шага</h2>
+    <div class="card"><div class="step"><div class="num">1</div><div class="body">
+      <b>Скачайте приложение INCY</b>
+      <p class="muted" style="margin:4px 0 0">Оно бесплатное. Если уже установлено — переходите к шагу 2.</p>
+      <button class="btn" id="dl-main" type="button">Скачать</button>
+      <p class="muted center" style="margin:10px 0 0"><a href="#" id="dl-other">Другое устройство</a></p>
+      <div id="dl-list" class="grid hidden" style="margin-top:10px"></div>
+    </div></div></div>
+    <div class="card"><div class="step"><div class="num">2</div><div class="body">
+      <b>Добавьте VPN в приложение</b>
+      <p class="muted" style="margin:4px 0 0">Нажмите кнопку — откроется INCY, согласитесь добавить.</p>
+      <button class="btn" id="add-incy" type="button">Добавить в INCY</button>
+      <button class="btn light" id="copy-link" type="button">Скопировать ссылку</button>
+      <p class="muted hidden" id="copied" style="margin:8px 0 0">Скопировано. В INCY нажмите «+» и вставьте.</p>
+    </div></div></div>
+    <div class="card"><div class="step"><div class="num">3</div><div class="body">
+      <b>Включите</b>
+      <p class="muted" style="margin:4px 0 0">В INCY выберите «⚡ Авто» и нажмите большую круглую кнопку. Телефон спросит разрешение — нажмите «Разрешить».</p>
+    </div></div></div>
+    <p class="muted center">Не получается? Нажмите «Помощь» на главном экране.</p>
+  </section>
+
+  <!-- покупка -->
+  <section id="s-buy" class="hidden">
+    <h2>Сколько устройств подключить?</h2>
+    <p class="muted">Телефон, планшет и компьютер — это разные устройства. Оплата раз в месяц.</p>
+    <div id="plans"></div>
+    <p class="muted" id="buy-note"></p>
+    <p class="muted">Оплачивая, вы соглашаетесь с <a href="#" data-doc="terms">условиями сервиса</a>.</p>
+  </section>
+
+  <!-- баланс -->
+  <section id="s-balance" class="hidden">
+    <h2>Баланс: <span id="bal-amount">0</span> ₽</h2>
+    <p class="muted">С баланса подписка продлевается сама раз в месяц — ничего не нужно делать вручную.</p>
+    <div class="card"><b>Пополнить</b>
+      <div class="grid" style="margin-top:10px" id="topups"></div>
+    </div>
+    <div class="card toggle">
+      <span><b>Продлевать автоматически</b><br><span class="muted">за день до окончания, если хватает денег</span></span>
+      <input type="checkbox" id="auto">
+    </div>
+  </section>
+
+  <!-- белые списки -->
+  <section id="s-wl" class="hidden">
+    <h2>Если урезали мобильный интернет</h2>
+    <div class="card">
+      <p>Иногда мобильный интернет ограничивают так, что работают только российские сайты. Тогда VPN <b>сам</b> переключается на запасной канал — ничего нажимать не нужно.</p>
+      <p style="margin:0">На запасной канал каждый месяц даётся <b id="wl-monthly">1</b> ГБ бесплатно. Если не хватает — можно докупить, купленное не сгорает.</p>
+    </div>
+    <div class="card center"><div class="muted">Сейчас доступно</div><div style="font-size:30px;font-weight:700" id="wl-left">—</div></div>
+    <div class="grid" id="wl-packs"></div>
+    <p class="muted" style="margin-top:12px">Совет: откройте INCY сейчас, пока интернет работает, и потяните список серверов вниз — так запасной канал точно сохранится.</p>
+  </section>
+
+</main>
+<script>window.SITE = { api: "{{ site.api }}", base: "{{ '/' | relative_url }}" };</script>
+<script src="{{ '/assets/miniapp.js' | relative_url }}"></script>
+</body>
+</html>
